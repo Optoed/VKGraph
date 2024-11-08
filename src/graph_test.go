@@ -2,6 +2,9 @@
 package src
 
 import (
+	"fmt"
+	"github.com/joho/godotenv"
+	"os"
 	"testing"
 )
 
@@ -35,8 +38,8 @@ func mockGetUsersDetails(userIDs []int) ([]Friend, error) {
 	return result, nil
 }
 
-func TestBuildGraph(t *testing.T) {
-	graph, err := BuildGraph(1, 5, mockGetFriendIDs, mockGetUsersDetails)
+func TestBuildGraph1(t *testing.T) {
+	graph, path, err := BuildGraph(1, 5, mockGetFriendIDs, mockGetUsersDetails)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
@@ -49,4 +52,42 @@ func TestBuildGraph(t *testing.T) {
 	}
 
 	t.Logf("Graph: %+v", graph)
+	t.Logf("Path: %+v", path)
+}
+
+func TestBuildGraph2(t *testing.T) {
+
+	// Загружаем переменные из .env
+	err := godotenv.Load("../.env")
+	if err != nil {
+		fmt.Println("Error loading .env file")
+		return
+	}
+
+	ACCESS_TOKEN := os.Getenv("ACCESS_TOKEN")
+	if ACCESS_TOKEN == "" {
+		fmt.Println("ACCESS_TOKEN is not set")
+		return
+	}
+
+	// Инициализируем VK API
+	InitVKClient(ACCESS_TOKEN)
+
+	optoed := 265240894
+	pikmike := 7834725
+	//через 1 друга
+
+	friendsIDs, err := GetFriendIDs(optoed)
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Log(friendsIDs)
+
+	_, path, err := BuildGraph(optoed, pikmike, GetFriendIDs, GetUsersDetails)
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Logf("path: %+v", path)
 }
