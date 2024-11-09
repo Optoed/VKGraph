@@ -39,24 +39,15 @@ func mockGetUsersDetails(userIDs []int) ([]Friend, error) {
 }
 
 func TestBuildGraph1(t *testing.T) {
-	graph, path, err := BuildGraph(1, 5, mockGetFriendIDs, mockGetUsersDetails)
+	path, err := bidirectionalSearch(1, 5, mockGetFriendIDs)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 
-	if _, ok := graph[1][2]; !ok {
-		t.Errorf("Expected friend with ID 2 in graph[1]")
-	}
-	if _, ok := graph[3][5]; !ok {
-		t.Errorf("Expected friend with ID 5 in graph[3]")
-	}
-
-	t.Logf("Graph: %+v", graph)
 	t.Logf("Path: %+v", path)
 }
 
 func TestBuildGraph2(t *testing.T) {
-
 	// Загружаем переменные из .env
 	err := godotenv.Load("../.env")
 	if err != nil {
@@ -73,18 +64,11 @@ func TestBuildGraph2(t *testing.T) {
 	// Инициализируем VK API
 	InitVKClient(ACCESS_TOKEN)
 
-	optoed := 265240894
-	pikmike := 7834725
+	userIda := 265240894
+	userIdb := 178526820
 	//через 1 друга
 
-	friendsIDs, err := GetFriendIDs(optoed)
-	if err != nil {
-		t.Error(err)
-	}
-
-	t.Log(friendsIDs)
-
-	_, path, err := BuildGraph(optoed, pikmike, GetFriendIDs, GetUsersDetails)
+	path, err := bidirectionalSearch(userIda, userIdb, GetFriendIDs)
 	if err != nil {
 		t.Error(err)
 	}

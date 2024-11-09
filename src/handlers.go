@@ -45,7 +45,7 @@ func BuildGraphHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, path, err := BuildGraph(userIDa, userIDb, GetFriendIDs, GetUsersDetails)
+	path, err := bidirectionalSearch(userIDa, userIDb, GetFriendIDs)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
