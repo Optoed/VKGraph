@@ -7,11 +7,11 @@ import (
 	"strconv"
 )
 
-var vk *api.VK
+var Vk *api.VK
 
 // Инициализация VK клиента
 func InitVKClient(accessToken string) {
-	vk = api.NewVK(accessToken)
+	Vk = api.NewVK(accessToken)
 }
 
 // Получение списка ID друзей
@@ -19,7 +19,7 @@ func GetFriendIDs(userID int) ([]int, error) {
 	friendsParams := params.NewFriendsGetBuilder()
 	friendsParams.UserID(userID)
 
-	response, err := vk.FriendsGet(friendsParams.Params)
+	response, err := Vk.FriendsGet(friendsParams.Params)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func GetUsersDetails(userIDs []int) ([]Friend, error) {
 	usersParams.UserIDs(ids)
 	usersParams.Fields([]string{"photo_50", "sex"})
 
-	response, err := vk.UsersGet(usersParams.Params)
+	response, err := Vk.UsersGet(usersParams.Params)
 	if err != nil {
 		return nil, err
 	}
