@@ -10,19 +10,14 @@ type GetFriendsIDsFunc func(userID int) ([]int, error)
 
 // backtrace восстанавливает путь от userIDa до userIDb
 func backtrace(path map[int]int, start, end int) []int {
-	if _, exists := path[end]; !exists {
-		fmt.Printf("Error: No path to %d found in backtrace\n", end)
-		return nil
-	}
-
 	shortest := []int{end}
-	for shortest[len(shortest)-1] != start {
-		prevNode, ok := path[shortest[len(shortest)-1]]
-		if !ok || prevNode == shortest[len(shortest)-1] {
-			fmt.Printf("Error: Node %d not found in path or stuck in loop\n", shortest[len(shortest)-1])
-			return nil
+	for end != start {
+		prevNode, ok := path[end]
+		if !ok {
+			return nil // Если узел не найден, возвращаем nil
 		}
-		shortest = append(shortest, prevNode)
+		end = prevNode
+		shortest = append(shortest, end)
 	}
 	slices.Reverse(shortest)
 	return shortest
@@ -51,25 +46,24 @@ func bidirectionalSearch(
 
 	for len(qA) > 0 && len(qB) > 0 {
 		// Выполняем шаги поиска из обеих сторон
-		if found, path := bfsStep(&qA, visitedA, visitedB, pathA, pathB, getFriendIDs); found {
+		if found, path := bfsStep(&qA, visitedA, visitedB, pathA, pathB, getFriendIDs, userIDa, userIDb); found {
 			return path, nil
 		}
 
-		if found, path := bfsStep(&qB, visitedB, visitedA, pathB, pathA, getFriendIDs); found {
+		if found, path := bfsStep(&qB, visitedB, visitedA, pathB, pathA, getFriendIDs, userIDb, userIDa); found {
 			return path, nil
 		}
 	}
 
-	// Путь не найден
-	return nil, nil
+	return nil, fmt.Errorf("Путь не найден")
 }
 
-// bfsStep выполняет один шаг BFS
 func bfsStep(
 	queue *[]int,
 	visited, otherVisited map[int]bool,
 	path, otherPath map[int]int,
 	getFriendIDs GetFriendsIDsFunc,
+	userIDa, userIDb int,
 ) (bool, []int) {
 	if len(*queue) == 0 {
 		return false, nil
@@ -78,15 +72,10 @@ func bfsStep(
 	currentID := (*queue)[0]
 	*queue = (*queue)[1:]
 
-	//fmt.Printf("Current node: %d\n", currentID)
-
 	friends, err := getFriendIDs(currentID)
 	if err != nil {
-		//fmt.Printf("Error fetching friends for %d: %v\n", currentID, err)
 		return false, nil
 	}
-
-	//fmt.Printf("Friends of %d: %v\n", currentID, friends)
 
 	for _, friendID := range friends {
 		if visited[friendID] {
@@ -95,10 +84,8 @@ func bfsStep(
 		visited[friendID] = true
 		path[friendID] = currentID
 
-		// Если найден узел, посещённый другой стороной
 		if otherVisited[friendID] {
-			//fmt.Printf("Meeting point found: %d\n", friendID)
-			return true, mergePaths(path, otherPath, friendID)
+			return true, mergePaths(path, otherPath, friendID, userIDa, userIDb)
 		}
 
 		*queue = append(*queue, friendID)
@@ -108,27 +95,28 @@ func bfsStep(
 }
 
 // mergePaths объединяет пути из прямого и обратного поиска
-func mergePaths(pathA, pathB map[int]int, meetingPoint int) []int {
-	//fmt.Printf("Merging paths at meeting point: %d\n", meetingPoint)
-
+func mergePaths(pathA, pathB map[int]int, meetingPoint int, userIDa, userIDb int) []int {
 	// Восстанавливаем путь от userIDa до meetingPoint
-	path1 := backtrace(pathA, pathA[meetingPoint], meetingPoint)
+	path1 := backtrace(pathA, userIDa, meetingPoint)
 	if path1 == nil {
 		fmt.Println("Error: Path1 is nil")
 		return nil
 	}
 
 	// Восстанавливаем путь от meetingPoint до userIDb
-	path2 := backtrace(pathB, pathB[meetingPoint], meetingPoint)
+	path2 := backtrace(pathB, userIDb, meetingPoint)
 	if path2 == nil {
 		fmt.Println("Error: Path2 is nil")
 		return nil
 	}
 
-	// Исключаем дублирование meetingPoint при объединении
-	path2 = path2[:len(path2)-1]
-	slices.Reverse(path1)
-	fullPath := append(path2, path1...)
-	fmt.Printf("Merged path: %v\n", fullPath)
+	// Убираем meetingPoint из второго пути
+	if len(path2) > 0 {
+		path2 = path2[:len(path2)-1]
+	}
+
+	// Соединяем оба пути
+	slices.Reverse(path2)
+	fullPath := append(path1, path2...)
 	return fullPath
 }
