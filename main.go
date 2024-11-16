@@ -31,6 +31,8 @@ func main() {
 	r.HandleFunc("/friends/{userID}", src.GetFriendsHandler).Methods("GET")
 	r.HandleFunc("/friends/{userIDa}/{userIDb}", src.BuildGraphHandler).Methods("GET")
 
+	r.HandleFunc("/friends/info/{userIDa}/{userIDb}", src.PrintPathHandler).Methods("GET")
+
 	fmt.Println("Server started on port 8080")
 	http.ListenAndServe(":8080", r)
 }

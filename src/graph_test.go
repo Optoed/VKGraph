@@ -126,7 +126,7 @@ func TestBuildGraph4(t *testing.T) {
 
 	userIda := 6482392
 	userIdb := 2323226
-	//через больше чем 1 друга
+	//это друзья
 
 	path, err := bidirectionalSearch(userIda, userIdb, GetFriendIDs)
 	if err != nil {

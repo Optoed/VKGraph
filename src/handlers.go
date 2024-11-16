@@ -54,3 +54,32 @@ func BuildGraphHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(path)
 }
+
+func PrintPathHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userIDa, err := strconv.Atoi(vars["userIDa"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userIDb, err := strconv.Atoi(vars["userIDb"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	path, err := bidirectionalSearch(userIDa, userIDb, GetFriendIDs)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	pathDetails, err := GetUsersDetails(path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(pathDetails)
+}

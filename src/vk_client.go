@@ -27,7 +27,7 @@ func GetFriendIDs(userID int) ([]int, error) {
 	return response.Items, nil
 }
 
-// Получение детальной информации о друзьях
+// Получение детальной информации о пользователе
 func GetUsersDetails(userIDs []int) ([]Friend, error) {
 	var ids []string
 	for _, id := range userIDs {
@@ -46,10 +46,11 @@ func GetUsersDetails(userIDs []int) ([]Friend, error) {
 	var friends []Friend
 	for _, user := range response {
 		friends = append(friends, Friend{
-			ID:    user.ID,
-			Name:  fmt.Sprintf("%s %s", user.FirstName, user.LastName),
-			Photo: user.Photo50,
-			Sex:   user.Sex,
+			ID:     user.ID,
+			Name:   fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+			Source: "https://vk.com/id" + strconv.Itoa(user.ID),
+			Photo:  user.Photo50,
+			Sex:    user.Sex,
 		})
 	}
 
