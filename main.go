@@ -33,6 +33,9 @@ func main() {
 
 	r.HandleFunc("/friends/info/{userIDa}/{userIDb}", src.PrintPathHandler).Methods("GET")
 
-	fmt.Println("Server started on port 8080")
-	http.ListenAndServe(":8080", r)
+	// Сервинг статических файлов
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
+
+	fmt.Println("Server started on port 8081")
+	http.ListenAndServe(":8081", r)
 }
